@@ -1,50 +1,60 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    signInWithEmailAndPassword,
+    setPersistence,
+    browserLocalPersistence
+} from "firebase/auth";
+import { auth } from "../services/firebase";
+import Swal from "sweetalert2";
+import { getUserData } from "../services/userService";
 
-function Login() {
-    const [correo, setCorreo] = useState('');
-    const [password, setPassword] = useState('');
+export default function Login() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
-    const manejarSubmit = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-
-        if (correo.trim() === '' || password.trim() === '') {
-            alert('Debes completar ambos campos.');
-            return;
+        try {
+            await setPersistence(auth, browserLocalPersistence);
+            const cred = await signInWithEmailAndPassword(auth, email, password);
+            const datos = await getUserData(cred.user.uid);
+            console.log("Bienvenido", datos.nombre, "Tipo:", datos.tipo);
+            navigate("/home");
+        // eslint-disable-next-line no-unused-vars
+        } catch (error) {
+            Swal.fire("Error", "Credenciales incorrectas", "error");
         }
-
-        alert('Inicio de sesión exitoso');
     };
+
 
     return (
         <div className="container mt-5">
             <h2>Iniciar Sesión</h2>
-            <form onSubmit={manejarSubmit}>
+            <form onSubmit={handleLogin}>
                 <div className="mb-3">
-                    <label className="form-label">Correo electrónico</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        value={correo}
-                        onChange={(e) => setCorreo(e.target.value)}
-                        required
-                    />
+                <label className="form-label">Correo Electrónico</label>
+                <input
+                    type="email"
+                    className="form-control"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
                 </div>
                 <div className="mb-3">
-                    <label className="form-label">Contraseña</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                <label className="form-label">Contraseña</label>
+                <input
+                    type="password"
+                    className="form-control"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
                 </div>
-                <button type="submit" className="btn btn-primary">
-                Iniciar Sesión
-                </button>
+                <button type="submit" className="btn btn-primary">Iniciar Sesión</button>
             </form>
         </div>
     );
 }
-
-export default Login;
