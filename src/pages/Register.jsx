@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
-
-import { auth } from "../services/firebase";
+//import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+//import { auth } from "../services/firebase";
+//import { saveUserData } from "../services/userService";
+import {registrarClienteConAuth} from "../services/clienteFirebase";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { saveUserData } from "../services/userService";
 
 export default function Register() {
     const [email, setEmail] = useState("");
@@ -16,11 +16,13 @@ export default function Register() {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const credenciales = await createUserWithEmailAndPassword(auth, email, password);
+            /* const credenciales = await createUserWithEmailAndPassword(auth, email, password);
 
             await sendEmailVerification(credenciales.user);
 
-            await saveUserData(credenciales.user.uid, { nombre, tipo, email });
+            await saveUserData(credenciales.user.uid, { nombre, tipo, email }); */
+
+            await registrarClienteConAuth( { nombre, tipo, email, password });
 
             Swal.fire(
                 "¡Registro exitoso!",

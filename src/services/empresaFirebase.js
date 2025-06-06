@@ -6,30 +6,30 @@ import {
 } from "firebase/firestore";
 
 
-export const getClientes = async () => {
-    const q = query(collection(db, "usuarios"), where("tipo", "==", "cliente"));
+export const getEmpresas = async () => {
+    const q = query(collection(db, "usuarios"), where("tipo", "==", "empresa"));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
-export const addCliente = async (clienteData) => {
+export const addEmpresa = async (EmpresaData) => {
     return await addDoc(collection(db, "usuarios"), {
-        ...clienteData,
-        tipo: "cliente"
+        ...EmpresaData,
+        tipo: "empresa"
     });
 };
 
-export const updateCliente = async (id, clienteData) => {
+export const updateEmpresa = async (id, EmpresaData) => {
     const ref = doc(db, "usuarios", id);
-    return await updateDoc(ref, clienteData);
+    return await updateDoc(ref, EmpresaData);
 };
 
-export const deleteCliente = async (id) => {
+export const deleteEmpresa = async (id) => {
     const ref = doc(db, "usuarios", id);
     return await deleteDoc(ref);
 };
 
-export const registrarClienteConAuth = async (datos) => {
+export const registrarEmpresaConAuth = async (datos) => {
     try {
         const cred = await createUserWithEmailAndPassword(secondaryAuth, datos.email, datos.password);
         await sendEmailVerification(cred.user);
@@ -38,14 +38,14 @@ export const registrarClienteConAuth = async (datos) => {
             nombre: datos.nombre || "",
             comuna: datos.comuna || "",
             direccion: datos.direccion || "",
-            tipo: datos.tipo || "cliente",
+            tipo: datos.tipo || "empresa",
             email: datos.email || ""
         });
 
         await secondaryAuth.signOut();
         return cred;
     } catch (error) {
-        console.error("Error registrando cliente:", error);
+        console.error("Error registrando Empresa:", error);
         throw error;
     }
 };
