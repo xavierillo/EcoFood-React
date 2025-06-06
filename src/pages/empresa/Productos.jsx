@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getProductosByEmpresa, addProducto, updateProducto, deleteProducto, buscarProductosPorNombre, obtenerProductosPagina } from "../../services/productoService";
+import { getProductosByEmpresa, addProducto, updateProducto, deleteProducto, obtenerProductosPagina } from "../../services/productoService";
 import Swal from "sweetalert2";
 
 export default function AdminProductos() {
@@ -9,25 +9,12 @@ export default function AdminProductos() {
     const [formData, setFormData] = useState({ nombre: "", descripcion: "", precio: 0, vencimiento: "", id: null });
     const [showModal, setShowModal] = useState(false);
 
-    const [busqueda, setBusqueda] = useState("");
-    const [pagina, setPagina] = useState(1);
-    const [total, setTotal] = useState(0);
+    const [pagina, setPagina] = useState(0);
 
-    const [lastDoc, setLastDoc] = useState(null);
-    const [cargando, setCargando] = useState(false);
-
-   /*  const cargarProductos = async () => {
-        setCargando(true);
-        const { productos: nuevos, lastVisible } = await buscarProductosPorNombre(userData.uid, "", lastDoc);
-        setProductos(prev => [...prev, ...nuevos]);
-        setLastDoc(lastVisible);
-        setCargando(false);
-    }; */
-
-    const totalPaginas = Math.ceil(total / 5);
 
     useEffect(() => {
         cargarPagina(); // carga la primera página
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const abrirModal = (producto = null) => {
@@ -68,7 +55,12 @@ export default function AdminProductos() {
     const [sinMas, setSinMas] = useState(false);
 
     const cargarPagina = async (adelante = true) => {
-        const cursor = adelante && historial.length > 0 ? historial[pagina] : null;
+        let cursor = null;
+        if (adelante && pagina > 0) {
+            cursor = historial[pagina - 1] || null;
+        } else if (!adelante && pagina > 1) {
+            cursor = historial[pagina - 2] || null;
+        }
 
         const { productos, lastVisible } = await obtenerProductosPagina(userData.uid, cursor);
 
@@ -82,9 +74,6 @@ export default function AdminProductos() {
             setPagina(p => p - 1);
         }
     };
-
-
-
 
 
     return (
@@ -113,7 +102,7 @@ export default function AdminProductos() {
 
             <nav>
             <ul className="pagination">
-                <li className={`page-item ${pagina === 0 ? "disabled" : ""}`}>
+                <li className={`page-item ${pagina <= 1 ? "disabled" : ""}`}>
                 <button className="page-link" onClick={() => cargarPagina(false)}>Anterior</button>
                 </li>
                 <li className={`page-item ${sinMas ? "disabled" : ""}`}>
