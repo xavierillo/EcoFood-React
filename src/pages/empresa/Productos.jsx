@@ -1,21 +1,24 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getProductosByEmpresa, addProducto, updateProducto, deleteProducto, obtenerProductosPagina } from "../../services/productoService";
 import Swal from "sweetalert2";
+import { getProductosByEmpresa, addProducto, updateProducto, deleteProducto, buscarProductosPorNombre, obtenerProductosPagina, PAGE_SIZE } from "../../services/productoService";
 
 export default function AdminProductos() {
-    const { userData } = useAuth();
+      const { userData } = useAuth();
     const [productos, setProductos] = useState([]);
     const [formData, setFormData] = useState({ nombre: "", descripcion: "", precio: 0, vencimiento: "", id: null });
     const [showModal, setShowModal] = useState(false);
 
+    const [busqueda, setBusqueda] = useState("");
     const [pagina, setPagina] = useState(0);
 
 
     useEffect(() => {
-        cargarPagina(); // carga la primera página
+        if (userData) {
+            cargarPagina(); // carga la primera página
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [userData]);
 
     const abrirModal = (producto = null) => {
         if (producto) {
@@ -50,6 +53,12 @@ export default function AdminProductos() {
         }
     };
 
+    //  Función de búsqueda paginada, puede habilitarse si se requiere
+    const cargarProductos = async () => {
+        const { productos: nuevos } = await buscarProductosPorNombre(userData.uid, "", null);
+        setProductos(prev => [...prev, ...nuevos]);
+   
+    };
 
     const [historial, setHistorial] = useState([]);
     const [sinMas, setSinMas] = useState(false);
@@ -62,16 +71,20 @@ export default function AdminProductos() {
             cursor = historial[pagina - 2] || null;
         }
 
-        const { productos, lastVisible } = await obtenerProductosPagina(userData.uid, cursor);
-
-        setProductos(productos);
+        const { productos: nuevos, lastVisible } = await obtenerProductosPagina(userData.uid, cursor);
+        setProductos(nuevos);
 
         if (adelante) {
-            setHistorial(prev => [...prev, lastVisible]);
+            setHistorial(prev => {
+                const copia = [...prev];
+                copia[pagina] = lastVisible;
+                return copia;
+            });
             setPagina(p => p + 1);
-            setSinMas(productos.length < 5);
+            setSinMas(nuevos.length < PAGE_SIZE);
         } else {
             setPagina(p => p - 1);
+            setSinMas(false);
         }
     };
 
@@ -80,13 +93,13 @@ export default function AdminProductos() {
         <div className="container mt-4">
             <h3>Gestión de Productos</h3>
             <button className="btn btn-primary mb-3" onClick={() => abrirModal()}>Agregar Producto</button>
-            {/* <button className="btn btn-secondary mb-3" onClick={cargarProductos}>Refresh</button>
+             <button className="btn btn-secondary mb-3" onClick={cargarProductos}>Refresh</button>
 
 
             <form className="d-flex mb-3" onSubmit={(e) => { e.preventDefault(); cargarProductos(); }}>
                 <input className="form-control me-2" type="search" placeholder="Buscar nombre" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
                 <button className="btn btn-outline-success" type="submit">Buscar</button>
-            </form> */}
+            </form>
 
             <ul className="list-group mb-3">
             {productos.map((p, i) => (

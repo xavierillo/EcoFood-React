@@ -37,7 +37,7 @@ export const updateProducto = async (id, data) => {
     await updateDoc(ref, data);
 };
 
-const PAGE_SIZE = 3;
+export const PAGE_SIZE = 3;
 
 export const buscarProductosPorNombre = async (empresaId, nombre, lastDoc = null) => {
     let q = query(
@@ -59,6 +59,7 @@ export const buscarProductosPorNombre = async (empresaId, nombre, lastDoc = null
 
     return { productos, lastVisible };
 };
+
 
 
 export const obtenerProductosPagina = async (empresaId, cursor = null) => {
